@@ -101,36 +101,33 @@ GROUND_Y = 650
 # PLAYER_X：玩家的固定X（水平）坐标
 PLAYER_X = 200
 
-# PLAYER_WIDTH / PLAYER_HEIGHT：玩家碰撞检测用的宽和高（像素）
+# 玩家碰撞检测用的宽和高（像素）
 PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 50
 
-# JUMP_HEIGHT：跳跃最大高度（像素）
+# 跳跃最大高度（像素）
 JUMP_HEIGHT = 200
 
-# JUMP_DURATION：一次跳跃的总时长（秒）
-# 1.0秒完成一个完整的跳跃（上升→下降）
+# 一次跳跃的总时长（秒）
 JUMP_DURATION = 0.8
 
-# OBSTACLE_MIN_SPEED / OBSTACLE_MAX_SPEED：障碍物移动速度范围
-# 单位是"像素/帧"，每帧障碍物向左移动的像素数
-# 随机在这个范围内取值，让每个障碍物速度不同，增加变化
-OBSTACLE_MIN_SPEED = 4   # 最慢：每帧移动4像素
-OBSTACLE_MAX_SPEED = 10   # 最快：每帧移动8像素
+#障碍物移动速度范围
+OBSTACLE_MIN_SPEED = 4   
+OBSTACLE_MAX_SPEED = 10   
 
-# OBSTACLE_MIN_WIDTH / OBSTACLE_MAX_WIDTH：障碍物宽度的随机范围
+# 障碍物宽度的随机范围
 OBSTACLE_MIN_WIDTH = 30
 OBSTACLE_MAX_WIDTH = 65
 
-# OBSTACLE_MIN_HEIGHT / OBSTACLE_MAX_HEIGHT：障碍物高度的随机范围
+# 障碍物高度的随机范围
 OBSTACLE_MIN_HEIGHT = 30
 OBSTACLE_MAX_HEIGHT = 100
 
-# 例如 1.5~3.0 秒内随机生成一个新的障碍物
+# 1.5~3.0 秒内随机生成一个新的障碍物
 MIN_SPAWN_INTERVAL = 1.0
 MAX_SPAWN_INTERVAL = 3.0
 
-# 给玩家一点准备时间，不会立刻就有障碍物冲过来
+# 给玩家一点准备时间
 INITIAL_SPAWN_DELAY = 1.0
 
 # pygame.Rect(x, y, width, height) 创建一个矩形对象
@@ -142,35 +139,28 @@ restart_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, 2
 quit_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
 start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 50)
 
-# 使用系统字体以确保中英文都能正常显示
-# SysFont 按顺序尝试列表中的字体，使用第一个在系统中找到的
-# Microsoft YaHei（微软雅黑）、SimHei（黑体）、Microsoft JhengHei 都同时支持中英文
+import os as _os
+
+# 字体加载：优先使用项目中捆绑的 font.ttc，再回退到系统字体
+# 捆绑的字体为文泉驿微米黑（GPL 许可，支持中英文），确保在所有平台都能正常显示
+_FONT_FILE = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "font.ttc")
+
 def _create_font(size):
-    """尝试用系统中支持中文的字体创建 Font 对象，找不到则回退到默认字体。"""
+    if _os.path.exists(_FONT_FILE):
+        return pygame.font.Font(_FONT_FILE, size)
     try:
         return pygame.font.SysFont(
-            ["Microsoft YaHei", "SimHei", "Microsoft JhengHei", "SimSun"],
-            size
+            ["Microsoft YaHei", "SimHei", "WenQuanYi Micro Hei", "Noto Sans CJK SC"],
+            size,
         )
     except Exception:
         return pygame.font.Font(None, size)
 
-font = _create_font(36)        # 标准字体（36号）
-small_font = _create_font(24)  # 小号字体（24号）
-big_font = _create_font(56)    # 大号字体（56号）
 
-# death_font：强制使用宋体（SimSun），确保中文死亡信息能正常显示
-# 先用 match_font 查找系统中宋体的真实路径，再用 Font(path, size) 加载
-# 如果找不到宋体，回退到通用 _create_font
-_death_path = pygame.font.match_font("SimSun")
-if _death_path:
-    death_font = pygame.font.Font(_death_path, 48)
-else:
-    # match_font 找不到的话，尝试直接加载 Windows 系统字体路径
-    try:
-        death_font = pygame.font.Font("C:/Windows/Fonts/simsun.ttc", 48)
-    except Exception:
-        death_font = _create_font(48)
+font = _create_font(36)
+small_font = _create_font(24)
+big_font = _create_font(56)
+death_font = _create_font(48)
 
 
 # 预渲染常用文字
@@ -189,8 +179,7 @@ ip = "127.0.0.1"
 # OSC_address_prefix：OSC地址前缀（用户输入的，用于匹配脑电设备的OSC地址格式）
 # 不同脑电设备可能使用不同的OSC地址前缀，留空则不加前缀
 OSC_address_prefix = ''
-# port_number：OSC服务器监听的端口号（用户输入的）
-# 端口号是一个0~65535的数字，脑电设备的数据会发送到这个端口
+# port_number：OSC服务器监听的端口号（用户输入）
 port_number = None
 
 # global_osc_server：全局的OSC服务器对象，在主程序中创建，在清理时关闭
