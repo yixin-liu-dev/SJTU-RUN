@@ -21,7 +21,7 @@ SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # pygame.display.set_caption() 设置窗口标题栏显示的文字
-pygame.display.set_caption('SJTU Run')
+pygame.display.set_caption('SJTU LIFE')
 
 
 #颜色定义
@@ -170,7 +170,7 @@ death_font = _create_font(48)
 restart_text = font.render("Restart", True, WHITE)
 quit_text = font.render("Quit", True, WHITE)
 start_text = font.render("Start Game", True, WHITE)
-title_text = big_font.render("SJTU RUN", True, BLACK)
+title_text = big_font.render("SJTU LIFE", True, BLACK)
 
 
 # OSC（Open Sound Control）脑电信号通信相关设置
@@ -192,12 +192,9 @@ global_osc_server = None
 eeg_lock = threading.Lock()
 
 # eeg_commands：存储当前脑电信号状态的字典（dictionary）
-# 字典是一种"键→值"的映射数据结构，用花括号 {} 表示
-# 这里的键是信号名称（字符串），值是 True/False（布尔值）或时间戳（浮点数）
-# 例如 eeg_commands["blink"] 表示"是否正在眨眼"
 eeg_commands = {
     "left_eyebrow": False,       # 左眉毛动作信号（当前未使用于游戏控制）
-    "right_eyebrow": False,      # 右眉毛/咬牙信号 → 用于"跳跃"指令
+    "right_eyebrow": False,      
     "clench_teeth": False,       # 咬牙信号（当前未直接使用）
     "blink": False,              # 眨眼信号 → 用于角色选择
     "forward_end_time": 0,       # 眨眼信号的结束时间（用于维持眨眼状态一段时间）
@@ -236,8 +233,7 @@ def eeg_handler(address, *args):
     current_time = time.time()
 
     # with eeg_lock：获取线程锁，进入"临界区"
-    # 确保在修改 eeg_commands 字典时，游戏主循环不会同时读取它
-    # 这防止了数据竞争（data race）问题
+    # 确保在修改 eeg_commands 字典时，游戏主循环不会同时读取
     with eeg_lock:
         # address.endswith("eeg/eeg[0]")：
         #   检查OSC地址是否以 "eeg/eeg[0]" 结尾
@@ -247,8 +243,7 @@ def eeg_handler(address, *args):
             # 这是一个阈值判断：大于阈值为True，否则为False
             eeg_commands["left_eyebrow"] = value > 0.001
 
-        # address.endswith("jaw_clench")：
-        #   "jaw_clench" 是咬牙（下颌咬紧）的信号通道
+        # "jaw_clench" 是咬牙（下颌咬紧）的信号通道
         elif address.endswith("jaw_clench"):
             # value > 0.99：咬牙力度超过99%才被认为是"有效咬牙"
             # 这么高的阈值是为了防止误触发（如说话、吞咽等被误判为咬牙）
@@ -325,9 +320,6 @@ def osc_server_thread(address_prefix, port):
     # osc_dispatcher.map(地址模式, 处理函数)
     # 为不同的 OSC 地址注册对应的处理函数
     # 当收到匹配地址的OSC消息时，自动调用 eeg_handler
-
-    # f-string（格式化字符串）：f"..." 允许在字符串中嵌入变量
-    # f"/{prefix}elements/eeg/eeg[0]" → 例如 "/muse/elements/eeg/eeg[0]"
     osc_dispatcher.map(f"/{prefix}elements/eeg/eeg[0]", eeg_handler)     # 左眉毛信号
     osc_dispatcher.map(f"/{prefix}elements/jaw_clench", eeg_handler)      # 咬牙信号
     osc_dispatcher.map(f"/{prefix}elements/blink", eeg_handler)           # 眨眼信号
@@ -517,14 +509,6 @@ def get_port_number():
         # 如果输入了有效文本，转换为整数并返回
         if input_text:
             return int(input_text)  # int() 把字符串转换为整数
-
-
-# ============================================================
-# Player 类（类的定义）
-# ============================================================
-# class 是用来创建"对象"的模板
-# 对象 = 数据（属性）+ 行为（方法/函数）
-# 比如 Player 类封装了玩家的位置、跳跃逻辑、绘制逻辑等
 
 class Player:
     """
@@ -868,12 +852,6 @@ def show_start_screen():
     """
     显示游戏的开始界面。
 
-    开始界面包含：
-        - 天蓝色天空背景 + 云朵装饰 + 地面
-        - "SJTU RUN" 大标题
-        - 绿色"Start Game"按钮
-        - 操作说明文字
-
     玩家可以：
         - 点击"Start Game"按钮 → 进入游戏
         - 按回车键（Enter）或空格键（Space） → 进入游戏
@@ -901,8 +879,8 @@ def show_start_screen():
         # 绘制地面
         draw_ground(screen)
 
-        # 绘制标题"DNOSAUR RUN"
-        title_surf = big_font.render("SJTU RUN", True, BLACK)
+        
+        title_surf = big_font.render("SJTU LIFE", True, BLACK)
         # 居中显示标题
         # get_width() 获取文字图片的宽度
         # SCREEN_WIDTH // 2 - 宽度 // 2 = 水平居中位置
@@ -1494,10 +1472,6 @@ def main(character_image=None):
         # tick(FPS) 确保每秒最多60帧，维持稳定的游戏速度
         # 在不同的电脑上游戏速度保持一致
         clock.tick(FPS)
-
-    # ================================================================
-    # 游戏结束处理（退出 while running 循环后执行）
-    # ================================================================
 
     # 计算最终的总分
     total_score = score + int((time.time() - game_start_time) * 10)
