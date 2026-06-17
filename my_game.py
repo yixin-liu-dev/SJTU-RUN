@@ -3,8 +3,6 @@ import random
 import time
 import threading
 
-# pythonosc：一个处理OSC协议（Open Sound Control）的第三方库
-# OSC是一种网络通信协议，常用于脑机接口设备与电脑之间的数据传输
 # dispatcher：负责把收到的OSC消息分发到对应的处理函数
 # osc_server：提供OSC服务器功能，监听并接收来自脑电设备的信号
 from pythonosc import dispatcher, osc_server
@@ -140,10 +138,15 @@ quit_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200,
 start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 50)
 
 import os as _os
+import sys as _sys
 
 # 字体加载：优先使用项目中捆绑的 font.ttc，再回退到系统字体
 # 捆绑的字体为文泉驿微米黑（GPL 许可，支持中英文），确保在所有平台都能正常显示
-_FONT_FILE = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "font.ttc")
+try:
+    _FONT_FILE = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "font.ttc")
+except NameError:
+    # __file__ 在某些环境不可用（如打包成exe、交互式Shell），回退到 sys.argv[0]
+    _FONT_FILE = _os.path.join(_os.path.dirname(_os.path.abspath(_sys.argv[0])), "font.ttc")
 
 def _create_font(size):
     if _os.path.exists(_FONT_FILE):
